@@ -16,8 +16,8 @@ class Category extends Model
         'nom',
     ];
 
-    public function produits()
+    public function products()
     {
-        return $this->hasMany(Produit::class, 'categorie_id');
+        return $this->hasMany(Product::class, 'categorie_id');
     }
 }

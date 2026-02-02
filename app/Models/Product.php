@@ -5,13 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Produit extends Model
+class Product extends Model
 {
     use HasFactory;
 
-    protected $table = 'produits';
-    
-    // The table has created_at and updated_at, so timestamps are true by default.
+    protected $table = 'products';
 
     protected $fillable = [
         'nom',
@@ -40,13 +38,13 @@ class Produit extends Model
         return $this->belongsTo(Fournisseur::class, 'fournisseur_id');
     }
 
-    public function ventes()
+    public function sales()
     {
-        return $this->hasMany(Vente::class, 'produit_id');
+        return $this->hasMany(Sale::class, 'product_id');
     }
 
-    public function demandesProduits()
+    public function productRequests()
     {
-        return $this->hasMany(DemandeProduit::class, 'produit_id');
+        return $this->hasMany(ProductRequest::class, 'product_id');
     }
 }

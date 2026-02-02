@@ -16,8 +16,6 @@ class FournisseurController extends Controller
     {
         $validated = $request->validate([
             'nom' => 'required|string|unique:fournisseurs,nom|max:120',
-            'telephone' => 'nullable|string|max:30',
-            'email' => 'nullable|email|max:120',
         ]);
 
         $fournisseur = Fournisseur::create($validated);
@@ -46,8 +44,6 @@ class FournisseurController extends Controller
 
         $validated = $request->validate([
             'nom' => 'required|string|unique:fournisseurs,nom,' . $id . '|max:120',
-            'telephone' => 'nullable|string|max:30',
-            'email' => 'nullable|email|max:120',
         ]);
 
         $fournisseur->update($validated);

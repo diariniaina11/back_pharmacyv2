@@ -14,12 +14,10 @@ class Fournisseur extends Model
 
     protected $fillable = [
         'nom',
-        'telephone',
-        'email',
     ];
 
-    public function produits()
+    public function products()
     {
-        return $this->hasMany(Produit::class, 'fournisseur_id');
+        return $this->hasMany(Product::class, 'fournisseur_id');
     }
 }
