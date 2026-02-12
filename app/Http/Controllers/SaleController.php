@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Sale;
+use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
@@ -21,9 +23,18 @@ class SaleController extends Controller
             'date_vente' => 'required|date',
         ]);
 
-        $sale = Sale::create($validated);
+        return DB::transaction(function () use ($validated) {
+            $product = Product::lockForUpdate()->find($validated['product_id']);
+            
+            if ($product->quantite_boites < $validated['quantite_vendue']) {
+                return response()->json(['message' => 'Stock insuffisant'], 400);
+            }
 
-        return response()->json($sale->load(['product', 'user']), 201);
+            $product->decrement('quantite_boites', $validated['quantite_vendue']);
+            $sale = Sale::create($validated);
+
+            return response()->json($sale->load(['product', 'user']), 201);
+        });
     }
 
     public function show($id)
@@ -52,9 +63,17 @@ class SaleController extends Controller
             'date_vente' => 'sometimes|date',
         ]);
 
-        $sale->update($validated);
-
-        return response()->json($sale->load(['product', 'user']), 200);
+        return DB::transaction(function () use ($sale, $validated) {
+            if (isset($validated['quantite_vendue'])) {
+                $product = Product::find($sale->product_id);
+                // Revert old quantity, apply new one
+                $product->increment('quantite_boites', $sale->quantite_vendue);
+                $product->decrement('quantite_boites', $validated['quantite_vendue']);
+            }
+            
+            $sale->update($validated);
+            return response()->json($sale->load(['product', 'user']), 200);
+        });
     }
 
     public function destroy($id)
@@ -65,8 +84,11 @@ class SaleController extends Controller
             return response()->json(['message' => 'Sale not found'], 404);
         }
 
-        $sale->delete();
-
-        return response()->json(['message' => 'Sale deleted successfully'], 200);
+        return DB::transaction(function () use ($sale) {
+            $product = Product::find($sale->product_id);
+            $product->increment('quantite_boites', $sale->quantite_vendue);
+            $sale->delete();
+            return response()->json(['message' => 'Sale deleted successfully'], 200);
+        });
     }
 }

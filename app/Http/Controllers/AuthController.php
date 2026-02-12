@@ -11,20 +11,26 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validated = $request->validate([
-            'email' => 'required|email',
+            'email' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $validated['email'])->first();
+        // Search by email OR badge_id
+        $user = User::where('email', $validated['email'])
+                    ->orWhere('badge_id', $validated['email'])
+                    ->first();
 
         if (!$user || !Hash::check($validated['password'], $user->password)) {
             return response()->json([
-                'message' => 'Email ou mot de passe incorrect'
+                'message' => 'Identifiants incorrects'
             ], 401);
         }
 
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
             'user' => $user,
+            'token' => $token,
             'message' => 'Connexion réussie'
         ], 200);
     }

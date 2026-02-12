@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProductRequest;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class ProductRequestController extends Controller
 {
@@ -20,9 +22,13 @@ class ProductRequestController extends Controller
             'user_id' => 'required|exists:users,id',
             'quantite_demandee' => 'required|integer|min:1',
             'commentaire' => 'nullable|string',
-            'status' => ['nullable', Rule::in(['EN_ATTENTE', 'VALIDE', 'REFUSE'])],
-            'date_creation' => 'required|date',
+            'status' => ['sometimes', Rule::in(['EN_ATTENTE', 'VALIDE', 'REFUSE'])],
+            'date_creation' => 'sometimes|date',
         ]);
+
+        if (!isset($validated['date_creation'])) {
+            $validated['date_creation'] = now()->toDateString();
+        }
 
         $productRequest = ProductRequest::create($validated);
 
@@ -57,9 +63,28 @@ class ProductRequestController extends Controller
             'date_creation' => 'sometimes|date',
         ]);
 
-        $productRequest->update($validated);
+        return DB::transaction(function () use ($productRequest, $validated) {
+            $oldStatus = $productRequest->status;
+            $productRequest->update($validated);
+            
+            // If status changed to VALIDE, increment stock
+            if ($oldStatus !== 'VALIDE' && $productRequest->status === 'VALIDE' && $productRequest->product_id) {
+                $product = Product::find($productRequest->product_id);
+                if ($product) {
+                    $product->increment('quantite_boites', $productRequest->quantite_demandee);
+                }
+            }
+            
+            // If it was VALIDE and changed to something else, we might need to decrement
+            if ($oldStatus === 'VALIDE' && $productRequest->status !== 'VALIDE' && $productRequest->product_id) {
+                 $product = Product::find($productRequest->product_id);
+                 if ($product) {
+                    $product->decrement('quantite_boites', $productRequest->quantite_demandee);
+                 }
+            }
 
-        return response()->json($productRequest->load(['product', 'user']), 200);
+            return response()->json($productRequest->load(['product', 'user']), 200);
+        });
     }
 
     public function destroy($id)
@@ -70,8 +95,15 @@ class ProductRequestController extends Controller
             return response()->json(['message' => 'Product request not found'], 404);
         }
 
-        $productRequest->delete();
-
-        return response()->json(['message' => 'Product request deleted successfully'], 200);
+        return DB::transaction(function () use ($productRequest) {
+            if ($productRequest->status === 'VALIDE' && $productRequest->product_id) {
+                $product = Product::find($productRequest->product_id);
+                if ($product) {
+                    $product->decrement('quantite_boites', $productRequest->quantite_demandee);
+                }
+            }
+            $productRequest->delete();
+            return response()->json(['message' => 'Product request deleted successfully'], 200);
+        });
     }
 }
