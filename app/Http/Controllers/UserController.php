@@ -44,6 +44,9 @@ class UserController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
+        // Make the password visible in the response
+        $user->makeVisible('password');
+
         return response()->json($user, 200);
     }
 
