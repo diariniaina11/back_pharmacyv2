@@ -42,6 +42,17 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
+    public function showByEmail($email)
+    {
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        return response()->json($user, 200);
+    }
+
     public function update(Request $request, $id)
     {
         $user = User::find($id);
