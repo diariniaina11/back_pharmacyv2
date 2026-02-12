@@ -31,20 +31,14 @@ class UserController extends Controller
         return response()->json($user, 201);
     }
 
-    public function show($id)
+    public function show($identifier)
     {
-        $user = User::find($id);
-
-        if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+        // Check if the identifier is an email (contains @)
+        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+            $user = User::where('email', $identifier)->first();
+        } else {
+            $user = User::find($identifier);
         }
-
-        return response()->json($user, 200);
-    }
-
-    public function showByEmail($email)
-    {
-        $user = User::where('email', $email)->first();
 
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);

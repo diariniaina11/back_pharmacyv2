@@ -16,7 +16,6 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::get('/users/email/{email}', [UserController::class, 'showByEmail']);
 Route::apiResource('users', UserController::class);
 Route::apiResource('categories', CategoryController::class);
 Route::apiResource('fournisseurs', FournisseurController::class);
