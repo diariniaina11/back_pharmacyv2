@@ -33,15 +33,19 @@ class UserController extends Controller
 
     public function show($identifier)
     {
-        // Check if the identifier is an email (contains @)
-        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+        // Check if the identifier contains @ (potential email)
+        if (str_contains($identifier, '@')) {
+            // Search by email without strict validation
             $user = User::where('email', $identifier)->first();
         } else {
+            // Search by ID
             $user = User::find($identifier);
         }
 
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return response()->json([
+                'message' => 'Aucun utilisateur correspondant'
+            ], 404);
         }
 
         // Make the password visible in the response
