@@ -69,6 +69,7 @@ class UserController extends Controller
             'password' => 'sometimes|string|min:6',
             'role' => 'sometimes|in:ADMIN,VENDEUR',
             'badge_id' => 'sometimes|string|unique:users,badge_id,' . $id . '|max:50',
+            'updated_at' => 'sometimes|date',
         ]);
 
         if (isset($validated['password'])) {
