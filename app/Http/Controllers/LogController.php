@@ -20,11 +20,13 @@ class LogController extends Controller
      */
     public function store(Request $request)
     {
+        $validActions = 'produitPlus,produitMoins,produitSupp,produitNew,venteMois,ventePlus,venteSupp,venteNew,categNew,categSupp';
+        
         $validatedData = $request->validate([
             'date' => 'nullable|date',
-            'action' => 'required|string|max:100',
+            'action' => 'required|string|in:' . $validActions,
             'info' => 'required|string|max:100',
-            'user' => 'required|string|max:50',
+            'user' => 'required|integer',
         ]);
 
         $log = Log::create($validatedData);
@@ -57,11 +59,13 @@ class LogController extends Controller
             return response()->json(['message' => 'Log not found'], 404);
         }
 
+        $validActions = 'produitPlus,produitMoins,produitSupp,produitNew,venteMois,ventePlus,venteSupp,venteNew,categNew,categSupp';
+
         $validatedData = $request->validate([
             'date' => 'nullable|date',
-            'action' => 'sometimes|required|string|max:100',
+            'action' => 'sometimes|required|string|in:' . $validActions,
             'info' => 'sometimes|required|string|max:100',
-            'user' => 'sometimes|required|string|max:50',
+            'user' => 'sometimes|required|integer',
         ]);
 
         $log->update($validatedData);
