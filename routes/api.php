@@ -9,6 +9,7 @@ use App\Http\Controllers\FournisseurController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ProductRequestController;
+use App\Http\Controllers\LogController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -22,3 +23,4 @@ Route::apiResource('fournisseurs', FournisseurController::class);
 Route::apiResource('products', ProductController::class);
 Route::apiResource('sales', SaleController::class);
 Route::apiResource('product-requests', ProductRequestController::class);
+Route::apiResource('logs', LogController::class);
