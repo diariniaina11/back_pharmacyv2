@@ -20,7 +20,7 @@ class LogController extends Controller
      */
     public function store(Request $request)
     {
-        $validActions = 'produitPlus,produitMoins,produitSupp,produitNew,venteMois,ventePlus,venteSupp,venteNew,categNew,categSupp';
+        $validActions = 'produitPlus,produitMoins,produitSupp,produitNew,venteMoins,ventePlus,venteSupp,venteNew,categNew,categSupp';
         
         $validatedData = $request->validate([
             'date' => 'nullable|date',
@@ -59,7 +59,7 @@ class LogController extends Controller
             return response()->json(['message' => 'Log not found'], 404);
         }
 
-        $validActions = 'produitPlus,produitMoins,produitSupp,produitNew,venteMois,ventePlus,venteSupp,venteNew,categNew,categSupp';
+        $validActions = 'produitPlus,produitMoins,produitSupp,produitNew,venteMoins,ventePlus,venteSupp,venteNew,categNew,categSupp';
 
         $validatedData = $request->validate([
             'date' => 'nullable|date',
